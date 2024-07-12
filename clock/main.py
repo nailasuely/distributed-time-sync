@@ -29,10 +29,20 @@ def start_server(port, handle_message):
 
 # Comunicação entre dispositivos - Envia vetor
 def send_message(server_ip, port, message):
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((server_ip, port))
-    client_socket.sendall(message.encode())
-    client_socket.close()
+    retry_attempts = 10  # Número de tentativas de conexão
+    for attempt in range(retry_attempts):
+        try:
+            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client_socket.settimeout(1)  # Define um tempo limite para a conexão
+            client_socket.connect((server_ip, port))
+            client_socket.sendall(message.encode())
+            client_socket.close()
+            return  # Se a mensagem foi enviada com sucesso, sai da função
+        except (ConnectionRefusedError, socket.timeout) as e:
+            print(f"Erro ao enviar mensagem para {server_ip}:{port} - Tentativa {attempt+1}/{retry_attempts}: {e}")
+            time.sleep(1)  # Espera 1 segundo antes de tentar novamente
+    print(f"Falha ao conectar com {server_ip}:{port} após {retry_attempts} tentativas")
+
 
 # Eleição do líder
 def elect_leader(clocks):
@@ -66,13 +76,13 @@ if __name__ == "__main__":
     threading.Thread(target=update_drift, args=(drift_event,)).start()
     
     # Enviar vetores periodicamente e executar eleição de líder
-    other_devices = [('127.0.0.1', 12346), ('127.0.0.1', 12347)]  # Exemplo de outros dispositivos
+    other_clocks = [('127.0.0.1', 12346), ('127.0.0.1', 12347)]  # Outros relógios
 
     while True:
         time.sleep(2)
         vector_str = str(local_clock.get_time())
-        for device in other_devices:
-            send_message(device[0], device[1], vector_str)
+        for i in range(len(other_clocks)):
+            send_message(other_clocks[i][0], other_clocks[i][1], vector_str)
         
         # Eleição do líder e sincronização
         other_clocks = [local_clock] + [VectorClock(num_processes, i) for i in range(1, num_processes)]
