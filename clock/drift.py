@@ -16,6 +16,7 @@ def manage_drift(clock, drift_event):
             drift = drift_event.value  # Atualiza o drift
         time.sleep(1 + drift)  # Tempo de tick ajustado pelo drift
         clock.tick()
+        print(clock.vector)
 
 # Função para atualizar o drift dinamicamente
 def update_drift(drift_event):

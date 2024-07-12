@@ -4,6 +4,13 @@ import time
 from vector_clock import VectorClock
 from drift import DriftEvent, manage_drift, update_drift 
 
+### O que este código precisa fazer?
+## - Enviar vetor para todos os relógios.
+## - Receber os vetores de todos os relógios.
+## - Atualizar valores máximos no vetor.
+## - Verificar se tem alguém com um valor maior e eleger novo líder. -> Como?
+##
+
 # Comunicação entre dispositivos - Recebe vetor
 def start_server(port, handle_message):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -44,11 +51,13 @@ def synchronize_clocks(leader_clock, follower_clocks):
 # Código principal
 if __name__ == "__main__":
     num_processes = 3  # Exemplo de três processos
-    process_id = 0  # ID deste processo
+    process_id = int(input("Digite o ID deste processo (0, 1, ou 2): "))
     local_clock = VectorClock(num_processes, process_id)
-    port = 12345  # Porta do servidor
+    port = 12345 + process_id
+    print("my port:", port)
     
-    # Iniciar servidor para receber vetores
+    # Inicia servidor para receber vetores
+    # Atualiza os vetores recebidos no vetor do relógio local caso seja novo máximo
     threading.Thread(target=start_server, args=(port, lambda msg: local_clock.update(msg))).start()
     
     # Gerenciamento do drift
@@ -57,7 +66,8 @@ if __name__ == "__main__":
     threading.Thread(target=update_drift, args=(drift_event,)).start()
     
     # Enviar vetores periodicamente e executar eleição de líder
-    other_devices = [('localhost', 12346), ('localhost', 12347)]  # Exemplo de outros dispositivos
+    other_devices = [('127.0.0.1', 12346), ('127.0.0.1', 12347)]  # Exemplo de outros dispositivos
+
     while True:
         time.sleep(2)
         vector_str = str(local_clock.get_time())
@@ -68,4 +78,4 @@ if __name__ == "__main__":
         other_clocks = [local_clock] + [VectorClock(num_processes, i) for i in range(1, num_processes)]
         leader = elect_leader(other_clocks)
         synchronize_clocks(leader, other_clocks)
-        print(f"Líder: {leader.get_time()}")
+        print(f"leader: {leader.get_time()}")
