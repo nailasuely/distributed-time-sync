@@ -21,6 +21,8 @@ def start_server(port, handle_message):
         print("inside client_thread")
         message = client_socket.recv(1024).decode()
         print("message:", message)
+        # depois daqui falha. os 3 relógios conectados param de processar. 
+        # quando o relógio recebe a mensagem, ele não continua incrementando seu contador.
         handle_message(eval(message))
         client_socket.close()
     
@@ -89,7 +91,7 @@ if __name__ == "__main__":
             send_message(other_clocks[i][0], other_clocks[i][1], vector_str)
         
         # Eleição do líder e sincronização
-        other_clocks = [local_clock] + [VectorClock(num_processes, i) for i in range(1, num_processes)]
-        leader = elect_leader(other_clocks)
-        synchronize_clocks(leader, other_clocks)
-        print(f"leader: {leader.get_time()}")
+        #other_clocks = [local_clock] + [VectorClock(num_processes, i) for i in range(1, num_processes)]
+        #leader = elect_leader(other_clocks)
+        #synchronize_clocks(leader, other_clocks)
+        #print(f"leader: {leader.get_time()}")
