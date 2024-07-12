@@ -11,6 +11,17 @@ from drift import DriftEvent, manage_drift, update_drift
 ## - Verificar se tem alguém com um valor maior e eleger novo líder. -> Como?
 ##
 
+### Problema encontrado:
+## Sequência de execução: relógio 0 -> relógio 1 -> relógio 2.
+## Vetor 0 consegue incrementar seu índice no vetor.
+## Vetor 0 consegue enviar seu vetor para os outros relógios (1 e 2)
+## Vetor 1 consegue receber o vetor do relógio 0.
+## Vetor 2 consegue receber o vetor do relógio 0.
+## Vetor 1 entra no while True na primeira vez. Nas outras, não entra. Fica só recebendo o vetor do relógio 0.
+## Vetor 2 entra no while True na primeira vez. Nas outras, não entra. Fica só recebendo o vetor do relógio 0.
+## Vetor 1 não incrementa seu índice no seu vetor.
+## Vetor 2 não incrementa seu índice no seu vetor.
+
 # Comunicação entre dispositivos - Recebe vetor
 def start_server(port, handle_message):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -85,6 +96,7 @@ if __name__ == "__main__":
     other_clocks = [('127.0.0.1', 12346), ('127.0.0.1', 12347)]  # Outros relógios
 
     while True:
+        print("estou dentro do while true da main. devo começar a enviar meu vetor.")
         time.sleep(2)
         vector_str = str(local_clock.get_time())
         for i in range(len(other_clocks)):
