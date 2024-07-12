@@ -40,12 +40,27 @@ def synchronize_clocks(leader_clock, follower_clocks):
     for clock in follower_clocks:
         clock.update(leader_time)
 
-# Gerenciamento do drift
-def manage_drift(clock, drift):
+# Gerenciamento do drift e aumento do contador
+def manage_drift(clock, drift_event):
+    drift = 0  # Inicialmente, sem drift
     while True:
-        time.sleep(1)
+        with drift_event.lock:
+            drift = drift_event.value  # Atualiza o drift
+        time.sleep(1 + drift)  # Tempo de tick ajustado pelo drift
         clock.tick()
-        time.sleep(drift)
+
+# Função para atualizar o drift dinamicamente
+def update_drift(drift_event):
+    while True:
+        new_drift = float(input("Digite o valor do drift (em segundos): "))
+        with drift_event.lock:
+            drift_event.value = new_drift
+
+# Estrutura para armazenar o valor do drift de forma thread-safe
+class DriftEvent:
+    def __init__(self):
+        self.value = 0
+        self.lock = threading.Lock()
 
 # Código principal
 if __name__ == "__main__":
@@ -57,9 +72,10 @@ if __name__ == "__main__":
     # Iniciar servidor para receber vetores
     threading.Thread(target=start_server, args=(port, lambda msg: local_clock.update(msg))).start()
     
-    # Inserir drift
-    drift = 0.5
-    threading.Thread(target=manage_drift, args=(local_clock, drift)).start()
+    # Gerenciamento do drift
+    drift_event = DriftEvent()
+    threading.Thread(target=manage_drift, args=(local_clock, drift_event)).start()
+    threading.Thread(target=update_drift, args=(drift_event,)).start()
     
     # Enviar vetores periodicamente e executar eleição de líder
     other_devices = [('localhost', 12346), ('localhost', 12347)]  # Exemplo de outros dispositivos
