@@ -18,12 +18,16 @@ def start_server(port, handle_message):
     server_socket.listen(5) # Coloca o socket em escuta
 
     def client_thread(client_socket):
+        print("inside client_thread")
         message = client_socket.recv(1024).decode()
+        print("message:", message)
         handle_message(eval(message))
         client_socket.close()
     
     while True:
+        print("am i receiving connection?")
         client_socket, addr = server_socket.accept() # Aceita conexão do cliente
+        print("yes!")
         # Abre uma thread para cada novo cliente conectado
         threading.Thread(target=client_thread, args=(client_socket,)).start()
 
