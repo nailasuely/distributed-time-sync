@@ -1,0 +1,104 @@
+log relógio 0:
+
+± python3 main.py
+Digite o ID deste processo (0, 1, ou 2): 0
+my port: 12345
+am i receiving connection?
+estou dentro do manage_drift: [0, 0, 0]
+Digite o valor do drift (em segundos): estou dentro do while true da main. devo começar a enviar meu vetor.
+[1, 0, 0]
+estou dentro do manage_drift: [1, 0, 0]
+[2, 0, 0]
+estou dentro do manage_drift: [2, 0, 0]
+Erro ao enviar mensagem para 127.0.0.1:12346 - Tentativa 1/10: [Errno 111] Connection refused
+[3, 0, 0]
+estou dentro do manage_drift: [3, 0, 0]
+Erro ao enviar mensagem para 127.0.0.1:12346 - Tentativa 2/10: [Errno 111] Connection refused
+[4, 0, 0]
+estou dentro do manage_drift: [4, 0, 0]
+Erro ao enviar mensagem para 127.0.0.1:12346 - Tentativa 3/10: [Errno 111] Connection refused
+[5, 0, 0]
+estou dentro do manage_drift: [5, 0, 0]
+Erro ao enviar mensagem para 127.0.0.1:12347 - Tentativa 1/10: [Errno 111] Connection refused
+[6, 0, 0]
+estou dentro do manage_drift: [6, 0, 0]
+Erro ao enviar mensagem para 127.0.0.1:12347 - Tentativa 2/10: [Errno 111] Connection refused
+[7, 0, 0]
+estou dentro do manage_drift: [7, 0, 0]
+Erro ao enviar mensagem para 127.0.0.1:12347 - Tentativa 3/10: [Errno 111] Connection refused
+[8, 0, 0]
+estou dentro do manage_drift: [8, 0, 0]
+estou dentro do while true da main. devo começar a enviar meu vetor.
+[9, 0, 0]
+estou dentro do manage_drift: [9, 0, 0]
+[10, 0, 0]
+estou dentro do manage_drift: [10, 0, 0]
+estou dentro do while true da main. devo começar a enviar meu vetor.
+[11, 0, 0]
+estou dentro do manage_drift: [11, 0, 0]
+[12, 0, 0]
+estou dentro do manage_drift: [12, 0, 0]
+estou dentro do while true da main. devo começar a enviar meu vetor.
+[13, 0, 0]
+estou dentro do manage_drift: [13, 0, 0]
+[14, 0, 0]
+estou dentro do manage_drift: [14, 0, 0]
+estou dentro do while true da main. devo começar a enviar meu vetor.
+[15, 0, 0]
+estou dentro do manage_drift: [15, 0, 0]
+[16, 0, 0]
+estou dentro do manage_drift: [16, 0, 0]
+...
+
+log relógio 1:
+
+± python3 main.py
+Digite o ID deste processo (0, 1, ou 2): 1
+my port: 12346
+am i receiving connection?
+estou dentro do manage_drift: [0, 0, 0]
+Digite o valor do drift (em segundos): estou dentro do while true da main. devo começar a enviar meu vetor.
+yes!
+inside client_thread
+am i receiving connection?
+message: [2, 0, 0]
+yes!
+inside client_thread
+message: [10, 0, 0]
+am i receiving connection?
+yes!
+inside client_thread
+message: [12, 0, 0]
+am i receiving connection?
+yes!
+inside client_thread
+am i receiving connection?
+message: [14, 0, 0]
+...
+
+
+log relógio 2:
+
+± python3 main.py
+Digite o ID deste processo (0, 1, ou 2): 2
+my port: 12347
+estou dentro do manage_drift: [0, 0, 0]
+Digite o valor do drift (em segundos): estou dentro do while true da main. devo começar a enviar meu vetor.
+am i receiving connection?
+yes!
+inside client_thread
+message: [2, 0, 0]
+am i receiving connection?
+yes!
+inside client_thread
+am i receiving connection?
+message: [10, 0, 0]
+yes!
+inside client_thread
+am i receiving connection?
+message: [12, 0, 0]
+yes!
+inside client_thread
+am i receiving connection?
+message: [14, 0, 0]
+...
