@@ -2,6 +2,7 @@ import socket
 import threading
 import time
 from vector_clock import VectorClock
+from drift import DriftEvent, manage_drift, update_drift 
 
 # Comunicação entre dispositivos - Recebe vetor
 def start_server(port, handle_message):
@@ -39,28 +40,6 @@ def synchronize_clocks(leader_clock, follower_clocks):
     leader_time = leader_clock.get_time()
     for clock in follower_clocks:
         clock.update(leader_time)
-
-# Gerenciamento do drift e aumento do contador
-def manage_drift(clock, drift_event):
-    drift = 0  # Inicialmente, sem drift
-    while True:
-        with drift_event.lock:
-            drift = drift_event.value  # Atualiza o drift
-        time.sleep(1 + drift)  # Tempo de tick ajustado pelo drift
-        clock.tick()
-
-# Função para atualizar o drift dinamicamente
-def update_drift(drift_event):
-    while True:
-        new_drift = float(input("Digite o valor do drift (em segundos): "))
-        with drift_event.lock:
-            drift_event.value = new_drift
-
-# Estrutura para armazenar o valor do drift de forma thread-safe
-class DriftEvent:
-    def __init__(self):
-        self.value = 0
-        self.lock = threading.Lock()
 
 # Código principal
 if __name__ == "__main__":
