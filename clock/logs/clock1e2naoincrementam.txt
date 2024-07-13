@@ -102,3 +102,169 @@ inside client_thread
 am i receiving connection?
 message: [14, 0, 0]
 ...
+
+
+Possível solução proposta pelo GPT:
+
+Problemas Identificados e Soluções
+1. Problema: Vetor não é atualizado corretamente nos relógios 1 e 2
+Os relógios 1 e 2 recebem o vetor, mas não atualizam o índice corretamente. O problema está no handle_message e na função update da classe VectorClock.
+
+2. Problema: Conexão recusada
+Isso acontece porque os outros relógios ainda não estão rodando quando o send_message tenta se conectar. Precisamos lidar com isso de forma mais robusta.
+
+3. Problema: manage_drift e update_drift não interagem corretamente
+O manage_drift deve ser capaz de pegar o valor atualizado do drift em tempo real.
+
+4. Problema: while True não processa mensagens corretamente
+Isso acontece porque os relógios 1 e 2 não estão processando as mensagens recebidas corretamente.
+
+Código Corrigido e Melhorado
+Abaixo está a versão corrigida e melhorada do código, que inclui as mudanças necessárias para resolver esses problemas:
+
+python
+import socket
+import threading
+import time
+from vector_clock import VectorClock
+
+# Comunicação entre dispositivos - Recebe vetor
+def start_server(port, handle_message):
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(('0.0.0.0', port))
+    server_socket.listen(5)  # Coloca o socket em escuta
+    print(f"Servidor ouvindo na porta {port}...")
+
+    def client_thread(client_socket):
+        try:
+            message = client_socket.recv(1024).decode()
+            if message:
+                print(f"Recebido: {message}")
+                handle_message(eval(message))  # Passa a mensagem recebida para handle_message
+        except Exception as e:
+            print(f"Erro ao receber mensagem: {e}")
+        finally:
+            client_socket.close()
+
+    while True:
+        print("Aguardando conexão...")
+        client_socket, addr = server_socket.accept()  # Aceita conexão do cliente
+        print(f"Conexão recebida de {addr}")
+        # Abre uma thread para cada novo cliente conectado
+        threading.Thread(target=client_thread, args=(client_socket,)).start()
+
+# Comunicação entre dispositivos - Envia vetor
+def send_message(server_ip, port, message):
+    retry_attempts = 10  # Número de tentativas de conexão
+    for attempt in range(retry_attempts):
+        try:
+            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client_socket.settimeout(1)  # Define um tempo limite para a conexão
+            client_socket.connect((server_ip, port))
+            client_socket.sendall(message.encode())
+            client_socket.close()
+            return  # Se a mensagem foi enviada com sucesso, sai da função
+        except (ConnectionRefusedError, socket.timeout) as e:
+            print(f"Erro ao enviar mensagem para {server_ip}:{port} - Tentativa {attempt+1}/{retry_attempts}: {e}")
+            time.sleep(1)  # Espera 1 segundo antes de tentar novamente
+    print(f"Falha ao conectar com {server_ip}:{port} após {retry_attempts} tentativas")
+
+# Eleição do líder
+def elect_leader(clocks):
+    leader = None
+    for clock in clocks:
+        if leader is None or clock.get_time() > leader.get_time():
+            leader = clock
+    return leader
+
+# Sincronização dos relógios
+def synchronize_clocks(leader_clock, follower_clocks):
+    leader_time = leader_clock.get_time()
+    for clock in follower_clocks:
+        clock.update(leader_time)
+
+# Gerenciamento do drift
+def manage_drift(clock, drift_event):
+    drift = 0  # Inicialmente, sem drift
+    while True:
+        drift_event.wait()  # Espera até que drift_event seja sinalizado
+        with drift_event.lock:
+            drift = drift_event.value  # Atualiza o drift
+        drift_event.clear()  # Limpa o evento
+        time.sleep(1 + drift)  # Tempo de tick ajustado pelo drift
+        clock.tick()
+
+# Função para atualizar o drift dinamicamente
+def update_drift(drift_event):
+    while True:
+        new_drift = float(input("Digite o valor do drift (em segundos): "))
+        with drift_event.lock:
+            drift_event.value = new_drift
+        drift_event.set()  # Notifica manage_drift sobre a atualização do drift
+
+# Estrutura para armazenar o valor do drift de forma thread-safe
+class DriftEvent:
+    def __init__(self):
+        self.value = 0
+        self.lock = threading.Lock()
+        self.event = threading.Event()
+
+    def wait(self):
+        self.event.wait()
+
+    def clear(self):
+        self.event.clear()
+
+    def set(self):
+        self.event.set()
+
+# Código principal
+if __name__ == "__main__":
+    num_processes = 3  # Exemplo de três processos
+    process_id = int(input("Digite o ID deste processo (0, 1, ou 2): "))
+    local_clock = VectorClock(num_processes, process_id)
+    port = 12345 + process_id
+    print(f"Porta deste processo: {port}")
+
+    # Inicia servidor para receber vetores
+    # Atualiza os vetores recebidos no vetor do relógio local caso seja novo máximo
+    threading.Thread(target=start_server, args=(port, lambda msg: local_clock.update(msg))).start()
+
+    # Gerenciamento do drift
+    drift_event = DriftEvent()
+    threading.Thread(target=manage_drift, args=(local_clock, drift_event)).start()
+    threading.Thread(target=update_drift, args=(drift_event,)).start()
+
+    # Lista de vetores de relógios conhecidos
+    other_clocks = [('127.0.0.1', 12346), ('127.0.0.1', 12347)]  # Outros relógios
+    while True:
+        print("Dentro do loop principal. Enviando vetor.")
+        time.sleep(2)
+        vector_str = str(local_clock.get_time())
+        for i in range(len(other_clocks)):
+            send_message(other_clocks[i][0], other_clocks[i][1], vector_str)
+
+        # Atualizar a lista de clocks_map com os vetores recebidos
+        clocks_map = {process_id: local_clock}
+        for i in range(num_processes):
+            if i != process_id:
+                clocks_map[i] = VectorClock(num_processes, i)
+
+        # Gerar lista de relógios a partir de clocks_map
+        other_clocks = list(clocks_map.values())
+        leader = elect_leader(other_clocks)
+        synchronize_clocks(leader, other_clocks)
+        print(f"Líder: {leader.get_time()}")
+        
+Explicação das Mudanças
+1. start_server e send_message
+start_server: Adicionada uma mensagem de erro mais informativa e uma verificação para garantir que a mensagem não seja None.
+send_message: O tempo de espera entre as tentativas foi reduzido e agora há um maior número de tentativas com um tempo limite de 1 segundo.
+2. manage_drift e update_drift
+manage_drift: A função agora usa um evento para aguardar e atualizar o drift. Isso garante que drift_event.wait() aguarde apenas até que drift_event.set() seja chamado.
+update_drift: Agora atualiza o drift em tempo real e notifica manage_drift quando um novo drift é inserido.
+3. elect_leader e synchronize_clocks
+elect_leader: Verifica o relógio com o maior vetor de tempo.
+synchronize_clocks: Atualiza os relógios seguidores com o tempo do líder.
+4. main
+main: Cria clocks_map e other_clocks adequadamente para garantir que os relógios estejam atualizados.
