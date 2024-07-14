@@ -4,7 +4,6 @@ import time
 # Estrutura para armazenar o valor do drift de forma thread-safe
 class DriftEvent:
     def __init__(self):
-        # Valor a ser atualizado via inserção do usuário
         self.value = 0
         self.lock = threading.Lock()
 
@@ -12,9 +11,11 @@ class DriftEvent:
 def manage_drift(clock, drift_event):
     drift = 0  # Inicialmente, sem drift
     while True:
-        print('estou dentro do manage_drift:', clock.get_time())
+        print("Dentro do drift.")
         with drift_event.lock:
+            print("Dentro do drift_event.lock.")
             drift = drift_event.value  # Atualiza o drift
+        print("Vou ajustar o tempo de tick.")
         time.sleep(1 + drift)  # Tempo de tick ajustado pelo drift
         clock.tick()
         print(clock.vector)
