@@ -11,14 +11,14 @@ class DriftEvent:
 def manage_drift(clock, drift_event):
     drift = 0  # Inicialmente, sem drift
     while True:
-        print("Dentro do drift.")
+        #print("Dentro do drift.")
         with drift_event.lock:
-            print("Dentro do drift_event.lock.")
+            #print("Dentro do drift_event.lock.")
             drift = drift_event.value  # Atualiza o drift
-        print("Vou ajustar o tempo de tick.")
+        #print("Vou ajustar o tempo de tick.")
         time.sleep(1 + drift)  # Tempo de tick ajustado pelo drift
         clock.tick()
-        print(clock.vector)
+        #print(clock.vector)
 
 # Função para atualizar o drift dinamicamente
 def update_drift(drift_event):
