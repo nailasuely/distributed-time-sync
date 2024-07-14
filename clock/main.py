@@ -55,12 +55,15 @@ def send_message(server_ip, port, message):
 
 
 # Eleição do líder
-def elect_leader(clocks):
-    leader = None
-    for clock in clocks:
-        if leader is None or clock.get_time() > leader.get_time():
-            leader = clock
-    return leader
+def elect_leader(vector):
+    vector = list(vector)
+    leader_index = 0
+    leader_value = 0
+    for i in range(len(vector)):
+        if int(vector[i]) > leader_value:
+            leader_value = vector[i]
+            leader_index = i
+    return leader_index, leader_value
 
 # Sincronização dos relógios
 def synchronize_clocks(leader_clock, follower_clocks):
@@ -83,22 +86,23 @@ if __name__ == "__main__":
     threading.Thread(target=start_server, args=(port, lambda msg: local_clock.update(msg))).start()
     
     # Enviar vetores periodicamente e executar eleição de líder
-    other_clocks = [('127.0.0.1', 12345), ('127.0.0.1', 12346), ('127.0.0.1', 12347)]  # Outros relógios
+    all_clocks_addr = [('127.0.0.1', 12345), ('127.0.0.1', 12346), ('127.0.0.1', 12347)]  # Outros relógios
 
     # Envio dos vetores
     # O primeiro código a ser executado consegue funcionar. Ele gerencia e atualiza o drift e também envia seus vetores para outros processos.
     while True:
         time.sleep(1)
         vector_str = str(local_clock.get_time())
-        for i in range(len(other_clocks)):
-            if other_clocks[i][1] != port:
-                print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Enviando para: {other_clocks[i][0]}, {other_clocks[i][1]}, {vector_str}")
-                send_message(other_clocks[i][0], other_clocks[i][1], vector_str)
+        for i in range(len(all_clocks_addr)):
+            if all_clocks_addr[i][1] != port:
+                print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Enviando para: {all_clocks_addr[i][0]}, {all_clocks_addr[i][1]}, {vector_str}")
+                send_message(all_clocks_addr[i][0], all_clocks_addr[i][1], vector_str)
                 time.sleep(1)
             
         # Eleição do líder e sincronização
-        #other_clocks = [local_clock] + [VectorClock(num_processes, i) for i in range(1, num_processes)]
-        #leader = elect_leader(other_clocks)
+        leader_index, leader_value = elect_leader(local_clock.get_time())
+        print(datetime.datetime.now().strftime('%H:%M:%S'), "- Líder: ", leader_index, leader_value)
+        
         #synchronize_clocks(leader, other_clocks)
         #print(f"leader: {leader.get_time()}")
 
