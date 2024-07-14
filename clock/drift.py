@@ -15,8 +15,9 @@ def manage_drift(clock, drift_event):
         with drift_event.lock:
             #print("Dentro do drift_event.lock.")
             drift = drift_event.value  # Atualiza o drift
-        #print("Vou ajustar o tempo de tick.")
-        time.sleep(1 + drift)  # Tempo de tick ajustado pelo drift
+        valor = 1 + drift
+        print("Meu drift value: ", drift_event.value, valor)
+        time.sleep(valor)  # Tempo de tick ajustado pelo drift
         clock.tick()
         #print(clock.vector)
 

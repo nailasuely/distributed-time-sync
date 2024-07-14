@@ -12,17 +12,6 @@ import datetime
 ## - Verificar se tem alguém com um valor maior e eleger novo líder. -> Como?
 ##
 
-### Problema encontrado:
-## Sequência de execução: relógio 0 -> relógio 1 -> relógio 2.
-## Vetor 0 consegue incrementar seu índice no vetor.
-## Vetor 0 consegue enviar seu vetor para os outros relógios (1 e 2)
-## Vetor 1 consegue receber o vetor do relógio 0.
-## Vetor 2 consegue receber o vetor do relógio 0.
-## Vetor 1 entra no while True na primeira vez. Nas outras, não entra. Fica só recebendo o vetor do relógio 0.
-## Vetor 2 entra no while True na primeira vez. Nas outras, não entra. Fica só recebendo o vetor do relógio 0.
-## Vetor 1 não incrementa seu índice no seu vetor.
-## Vetor 2 não incrementa seu índice no seu vetor.
-
 # Comunicação entre dispositivos - Recebe vetor
 def start_server(port, handle_message):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -60,7 +49,7 @@ def send_message(server_ip, port, message):
             client_socket.close()
             return  # Se a mensagem foi enviada com sucesso, sai da função
         except (ConnectionRefusedError, socket.timeout) as e:
-            #print(f"Erro ao enviar mensagem para {server_ip}:{port} - Tentativa {attempt+1}/{retry_attempts}: {e}")
+            print(f"Erro ao enviar mensagem para {server_ip}:{port} - Tentativa {attempt+1}/{retry_attempts}: {e}")
             time.sleep(1)  # Espera 1 segundo antes de tentar novamente
     print(f"Falha ao conectar com {server_ip}:{port} após {retry_attempts} tentativas")
 
@@ -86,20 +75,12 @@ if __name__ == "__main__":
     local_clock = VectorClock(num_processes, process_id)
     port = 12345 + process_id
 
+    # Gerenciamento do drift
     drift_event = DriftEvent()
     threading.Thread(target=manage_drift, args=(local_clock, drift_event)).start()
     threading.Thread(target=update_drift, args=(drift_event,)).start()
     
-    # Inicia servidor para receber vetores.
-    # Atualiza os vetores recebidos no vetor do relógio local caso seja novo máximo.
-    # Se ele receber a conexão primeiro do que tentar efetuar a conexão, ou seja,
-    # se receber o vetor primeiro do que tentar enviar, ele fica só recebendo vetor. 
-    # O código todo fica focado nessa thread. 
-    # E ele não consegue fazer o gerenciamento do drift e nem fazer o envio dos vetores.
     threading.Thread(target=start_server, args=(port, lambda msg: local_clock.update(msg))).start()
-    
-    # Gerenciamento do drift
-    
     
     # Enviar vetores periodicamente e executar eleição de líder
     other_clocks = [('127.0.0.1', 12345), ('127.0.0.1', 12346), ('127.0.0.1', 12347)]  # Outros relógios
