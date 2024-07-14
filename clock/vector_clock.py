@@ -12,8 +12,6 @@ class VectorClock:
     
     # Incrementa o valor da posição deste processo no vetor
     def tick(self):
-        time.sleep(1)
-        #with self.lock:
         print(f"Meu valor: {self.vector[self.process_id]} - {self.vector}")
         self.vector[self.process_id] += 1
     
@@ -23,7 +21,6 @@ class VectorClock:
             for i in range(len(self.vector)):
                 if self.vector[i] < received_vector[i]:
                     self.vector[i] = received_vector[i]
-            self.tick()
     
     def get_time(self):
         with self.lock:
