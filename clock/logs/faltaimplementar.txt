@@ -1,0 +1,4 @@
+- Sincronização de valores para os vetores.
+- Eleição de lícer.
+- No momentos, cada um incrementa seu vetor, atualiza de acordo com os vetores dos outros e envia para todos.
+- Falta selecionar o maior e enviar esse valor maior para todos.
