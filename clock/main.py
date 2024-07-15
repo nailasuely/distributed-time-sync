@@ -65,12 +65,6 @@ def elect_leader(vector):
             leader_index = i
     return leader_index, leader_value
 
-# Sincronização dos relógios
-def synchronize_clocks(leader_clock, follower_clocks):
-    leader_time = leader_clock.get_time()
-    for clock in follower_clocks:
-        clock.update(leader_time)
-
 # Código principal
 if __name__ == "__main__":
     num_processes = 3  # Exemplo de três processos
