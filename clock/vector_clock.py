@@ -1,5 +1,4 @@
 import threading
-import time 
 
 class VectorClock:
     def __init__(self, num_processes, process_id):
@@ -12,7 +11,6 @@ class VectorClock:
     
     # Incrementa o valor da posição deste processo no vetor
     def tick(self):
-        #print(f"Meu valor: {self.vector[self.process_id]} - {self.vector}")
         self.vector[self.process_id] += 1
     
     # Atualiza o vetor do processo com base em um vetor recebido de outro processo

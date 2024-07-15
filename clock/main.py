@@ -5,35 +5,25 @@ from vector_clock import VectorClock
 from drift import DriftEvent, manage_drift, update_drift 
 import datetime
 
-### O que este código precisa fazer?
-## - Enviar vetor para todos os relógios.
-## - Receber os vetores de todos os relógios.
-## - Atualizar valores máximos no vetor.
-## - Verificar se tem alguém com um valor maior e eleger novo líder. -> Como?
-##
-
 # Comunicação entre dispositivos - Recebe vetor
 def start_server(port, handle_message):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', port))
     server_socket.listen(5)  # Coloca o socket em escuta
-    #print(f"Servidor ouvindo na porta {port}...")
 
     def client_thread(client_socket):
         try:
             message = client_socket.recv(1024).decode()
             if message:
-                #print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Recebido: {message}")
                 handle_message(eval(message))  # Passa a mensagem recebida para handle_message
         except Exception as e:
-            #print(f"Erro ao receber mensagem: {e}")
+            print(f"Erro ao receber mensagem: {e}")
             pass
         finally:
             client_socket.close()
 
     while True:
         client_socket, addr = server_socket.accept()  # Aceita conexão do cliente
-        #print(f"Conexão recebida de {addr}")
         # Abre uma thread para cada novo cliente conectado
         threading.Thread(target=client_thread, args=(client_socket,)).start()
 
@@ -89,15 +79,11 @@ if __name__ == "__main__":
         vector_str = str(local_clock.get_time())
         for i in range(len(all_clocks_addr)):
             if all_clocks_addr[i][1] != port:
-                #print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Enviando para: {all_clocks_addr[i][0]}, {all_clocks_addr[i][1]}, {vector_str}")
                 send_message(all_clocks_addr[i][0], all_clocks_addr[i][1], vector_str)
-                #time.sleep(1)
             
         # Eleição do líder e sincronização
         leader_index, leader_value = elect_leader(local_clock.get_time())
         print(datetime.datetime.now().strftime('%H:%M:%S'), "- Líder: ", leader_index, leader_value)
         
-        #synchronize_clocks(leader, other_clocks)
-        #print(f"leader: {leader.get_time()}")
 
 
