@@ -1,0 +1,4 @@
+- atualizaão do vetor de relógio do processo local com o vetor recebido
+- ack para garantir que a mensagem foi recebida
+- líder envia seu horário para os outros processos 
+- correção na funcao de eleição para que ela escolha o processo com o vetor c o valor mais alto. 

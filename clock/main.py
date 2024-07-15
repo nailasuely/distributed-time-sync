@@ -17,26 +17,31 @@ def start_server(port, handle_message):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', port))
     server_socket.listen(5)  # Coloca o socket em escuta
-    #print(f"Servidor ouvindo na porta {port}...")
+    print(f"Servidor ouvindo na porta {port}...")
 
     def client_thread(client_socket):
         try:
             message = client_socket.recv(1024).decode()
             if message:
                 print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Recebido: {message}")
-                handle_message(eval(message))  # Passa a mensagem recebida para handle_message
+                received_vector = eval(message)
+                local_clock.update(received_vector)  # Atualiza o vetor de relógio local com o recebido
+                handle_message(received_vector)  # Passa a mensagem recebida para handle_message
+                client_socket.sendall(b'ACK')  # Envia confirmação de recebimento
         except Exception as e:
-            #print(f"Erro ao receber mensagem: {e}")
+            print(f"Erro ao receber mensagem: {e}")
             pass
         finally:
             client_socket.close()
 
     while True:
-        client_socket, addr = server_socket.accept()  # Aceita conexão do cliente
-        #print(f"Conexão recebida de {addr}")
+        client_socket, i = server_socket.accept()  # Aceita conexão do cliente
+        print(f"Conexão recebida de {i}")
         # Abre uma thread para cada novo cliente conectado
         threading.Thread(target=client_thread, args=(client_socket,)).start()
 
+
+# Comunicação entre dispositivos - Envia vetor
 # Comunicação entre dispositivos - Envia vetor
 def send_message(server_ip, port, message):
     retry_attempts = 10  # Número de tentativas de conexão
@@ -46,8 +51,10 @@ def send_message(server_ip, port, message):
             client_socket.settimeout(1)  # Define um tempo limite para a conexão
             client_socket.connect((server_ip, port))
             client_socket.sendall(message.encode())
-            client_socket.close()
-            return  # Se a mensagem foi enviada com sucesso, sai da função
+            ack = client_socket.recv(1024)  # Aguarda confirmação de recebimento
+            if ack == b'ACK':
+                client_socket.close()
+                return  # Se a mensagem foi enviada com sucesso e recebida, sai da função
         except (ConnectionRefusedError, socket.timeout) as e:
             print(f"Erro ao enviar mensagem para {server_ip}:{port} - Tentativa {attempt+1}/{retry_attempts}: {e}")
             time.sleep(1)  # Espera 1 segundo antes de tentar novamente
@@ -96,46 +103,32 @@ if __name__ == "__main__":
     threading.Thread(target=start_server, args=(port, lambda msg: local_clock.update(msg))).start()
     
     # Enviar vetores periodicamente e executar eleição de líder
-    all_clocks_addr = [('127.0.0.1', 12345), ('127.0.0.1', 12346), ('127.0.0.1', 12347)]  # Outros relógios
+    all_clocks_i = [('127.0.0.1', 12345), ('127.0.0.1', 12346), ('127.0.0.1', 12347)]  # Outros relógios
 
     # controle p vetores e proceso que estão ativos 
     vectors = [None] * num_processes
     active_processes = set(range(num_processes))
 
-
     # Envio dos vetores
-    # O primeiro código a ser executado consegue funcionar. Ele gerencia e atualiza o drift e também envia seus vetores para outros processos.
     while True:
         time.sleep(1)
         vector_str = str(local_clock.get_time())
-
-        ## atenção aq 
+         # vetor de relógio local com o vetor atual
         vectors[process_id] = local_clock.get_time()
 
-        """for i in range(len(all_clocks_addr)):
-            if all_clocks_addr[i][1] != port:
-                print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Enviando para: {all_clocks_addr[i][0]}, {all_clocks_addr[i][1]}, {vector_str}")
-                send_message(all_clocks_addr[i][0], all_clocks_addr[i][1], vector_str)
+        # aqui eh pra enviar o vetor de relógio para todos os outros processos
+        for i in all_clocks_i:
+            if i[1] != port:
+                print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Enviando para: {i[0]}, {i[1]}, {vector_str}")
+                send_message(i[0], i[1], vector_str)
                 time.sleep(1)
-            
-        # Eleição do líder e sincronização
-        leader_index, leader_value = elect_leader(local_clock.get_time())
-        print(datetime.datetime.now().strftime('%H:%M:%S'), "- Líder: ", leader_index, leader_value)
-        
-        #synchronize_clocks(leader, other_clocks)
-        #print(f"leader: {leader.get_time()}")
-    """
-        for addr in all_clocks_addr:
-            if addr[1] != port:
-                print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Enviando para: {addr[0]}, {addr[1]}, {vector_str}")
-                send_message(addr[0], addr[1], vector_str)
-                time.sleep(1)
-
+        # verificação p ver se todos os vetores foram recebidos
         if all(v is not None for v in vectors):
+            ## eleição aqui 
             leader_index = elect_leader(vectors, active_processes)
             print(f"{datetime.datetime.now().strftime('%H:%M:%S')} - Líder: {leader_index}")
+            # sincroniza os relógios com o líder
             if process_id == leader_index:
                 synchronize_clocks(local_clock, [local_clock])
             else:
-                synchronize_clocks(vectors[leader_index], [local_clock])
-
+                synchronize_clocks(VectorClock(num_processes, leader_index), [local_clock])
