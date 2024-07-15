@@ -23,7 +23,7 @@ def start_server(port, handle_message):
         try:
             message = client_socket.recv(1024).decode()
             if message:
-                print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Recebido: {message}")
+                #print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Recebido: {message}")
                 handle_message(eval(message))  # Passa a mensagem recebida para handle_message
         except Exception as e:
             #print(f"Erro ao receber mensagem: {e}")
@@ -95,9 +95,9 @@ if __name__ == "__main__":
         vector_str = str(local_clock.get_time())
         for i in range(len(all_clocks_addr)):
             if all_clocks_addr[i][1] != port:
-                print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Enviando para: {all_clocks_addr[i][0]}, {all_clocks_addr[i][1]}, {vector_str}")
+                #print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Enviando para: {all_clocks_addr[i][0]}, {all_clocks_addr[i][1]}, {vector_str}")
                 send_message(all_clocks_addr[i][0], all_clocks_addr[i][1], vector_str)
-                time.sleep(1)
+                #time.sleep(1)
             
         # Eleição do líder e sincronização
         leader_index, leader_value = elect_leader(local_clock.get_time())
