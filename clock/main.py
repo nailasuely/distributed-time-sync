@@ -1,0 +1,141 @@
+import socket
+import threading
+import time
+from vector_clock import VectorClock
+from drift import DriftEvent, manage_drift, update_drift 
+import datetime
+
+### O que este código precisa fazer?
+## - Enviar vetor para todos os relógios.
+## - Receber os vetores de todos os relógios.
+## - Atualizar valores máximos no vetor.
+## - Verificar se tem alguém com um valor maior e eleger novo líder. -> Como?
+##
+
+# Comunicação entre dispositivos - Recebe vetor
+def start_server(port, handle_message):
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(('0.0.0.0', port))
+    server_socket.listen(5)  # Coloca o socket em escuta
+    #print(f"Servidor ouvindo na porta {port}...")
+
+    def client_thread(client_socket):
+        try:
+            message = client_socket.recv(1024).decode()
+            if message:
+                print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Recebido: {message}")
+                handle_message(eval(message))  # Passa a mensagem recebida para handle_message
+        except Exception as e:
+            #print(f"Erro ao receber mensagem: {e}")
+            pass
+        finally:
+            client_socket.close()
+
+    while True:
+        client_socket, addr = server_socket.accept()  # Aceita conexão do cliente
+        #print(f"Conexão recebida de {addr}")
+        # Abre uma thread para cada novo cliente conectado
+        threading.Thread(target=client_thread, args=(client_socket,)).start()
+
+# Comunicação entre dispositivos - Envia vetor
+def send_message(server_ip, port, message):
+    retry_attempts = 10  # Número de tentativas de conexão
+    for attempt in range(retry_attempts):
+        try:
+            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client_socket.settimeout(1)  # Define um tempo limite para a conexão
+            client_socket.connect((server_ip, port))
+            client_socket.sendall(message.encode())
+            client_socket.close()
+            return  # Se a mensagem foi enviada com sucesso, sai da função
+        except (ConnectionRefusedError, socket.timeout) as e:
+            print(f"Erro ao enviar mensagem para {server_ip}:{port} - Tentativa {attempt+1}/{retry_attempts}: {e}")
+            time.sleep(1)  # Espera 1 segundo antes de tentar novamente
+    print(f"Falha ao conectar com {server_ip}:{port} após {retry_attempts} tentativas")
+
+
+"""# Eleição do líder (doug)
+def elect_leader(vector):
+    vector = list(vector)
+    leader_index = 0
+    leader_value = 0
+    for i in range(len(vector)):
+        if int(vector[i]) > leader_value:
+            leader_value = vector[i]
+            leader_index = i
+    return leader_index, leader_value
+"""
+
+def elect_leader(vectors, active_processes):
+    max_vector = None
+    leader_index = -1
+    for i in active_processes:
+        if max_vector is None or vectors[i] > max_vector:
+            max_vector = vectors[i]
+            leader_index = i
+    return leader_index
+
+
+# Sincronização dos relógios
+def synchronize_clocks(leader_vector, follower_clocks):
+    for clock in follower_clocks:
+        clock.update(leader_vector)
+
+# Código principal
+if __name__ == "__main__":
+    num_processes = 3  # Exemplo de três processos
+    process_id = int(input("Digite o ID deste processo (0, 1, ou 2): "))
+    local_clock = VectorClock(num_processes, process_id)
+    port = 12345 + process_id
+
+    # Gerenciamento do drift
+    drift_event = DriftEvent()
+    threading.Thread(target=manage_drift, args=(local_clock, drift_event)).start()
+    threading.Thread(target=update_drift, args=(drift_event,)).start()
+    
+    threading.Thread(target=start_server, args=(port, lambda msg: local_clock.update(msg))).start()
+    
+    # Enviar vetores periodicamente e executar eleição de líder
+    all_clocks_addr = [('127.0.0.1', 12345), ('127.0.0.1', 12346), ('127.0.0.1', 12347)]  # Outros relógios
+
+    # controle p vetores e proceso que estão ativos 
+    vectors = [None] * num_processes
+    active_processes = set(range(num_processes))
+
+
+    # Envio dos vetores
+    # O primeiro código a ser executado consegue funcionar. Ele gerencia e atualiza o drift e também envia seus vetores para outros processos.
+    while True:
+        time.sleep(1)
+        vector_str = str(local_clock.get_time())
+
+        ## atenção aq 
+        vectors[process_id] = local_clock.get_time()
+
+        """for i in range(len(all_clocks_addr)):
+            if all_clocks_addr[i][1] != port:
+                print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Enviando para: {all_clocks_addr[i][0]}, {all_clocks_addr[i][1]}, {vector_str}")
+                send_message(all_clocks_addr[i][0], all_clocks_addr[i][1], vector_str)
+                time.sleep(1)
+            
+        # Eleição do líder e sincronização
+        leader_index, leader_value = elect_leader(local_clock.get_time())
+        print(datetime.datetime.now().strftime('%H:%M:%S'), "- Líder: ", leader_index, leader_value)
+        
+        #synchronize_clocks(leader, other_clocks)
+        #print(f"leader: {leader.get_time()}")
+    """
+        for addr in all_clocks_addr:
+            if addr[1] != port:
+                print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Enviando para: {addr[0]}, {addr[1]}, {vector_str}")
+                send_message(addr[0], addr[1], vector_str)
+                time.sleep(1)
+
+        if all(v is not None for v in vectors):
+            leader_index = elect_leader(vectors, active_processes)
+            print(f"{datetime.datetime.now().strftime('%H:%M:%S')} - Líder: {leader_index}")
+            if process_id == leader_index:
+                synchronize_clocks(local_clock, [local_clock])
+            else:
+                synchronize_clocks(vectors[leader_index], [local_clock])
+
