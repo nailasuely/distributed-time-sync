@@ -1,3 +1,19 @@
+<h1 align="center">
+  <br>
+  <br>
+  Sincronização de Relógios em Ambientes Distribuídos
+  <br>
+</h1>
+
+<h4 align="center">Projeto da disciplina TEC 502 - Concorrência e Conectividade </h4>
+
+<p align="center">
+<div align="center">
+
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/nailasuely/distributed-time-sync/blob/main/LICENSE)
+
+
+
 <div align="center">
    
 # Sincronização de Relógios em Ambientes Distribuídos
