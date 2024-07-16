@@ -56,3 +56,11 @@ Para executar o projeto, siga os passos abaixo:
    ```bash
    git clone https://github.com/seu-usuario/distributed-time-sync.git
    cd distributed-time-sync
+    ```
+
+2. Execute o Dockerfile:
+   ```bash
+   cd clock
+   docker build -t time-sync .
+   docker run --network='host' -it --name container-time-sync time-sync
+    ```
