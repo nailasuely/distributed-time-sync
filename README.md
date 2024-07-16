@@ -33,6 +33,7 @@ O sistema utiliza quatro threads para garantir a operação correta:
 O projeto utiliza o algoritmo de relógios vetoriais para resolver o problema de sincronização de tempo em sistemas distribuídos.
 
 Como o Algoritmo Funciona:
+
 Estrutura de Dados: Cada processo possui um vetor que mantém o estado de seus próprios eventos e os eventos de outros processos. O vetor tem um tamanho igual ao número total de processos, e cada posição do vetor representa o tempo de um processo específico.
 
 Incremento Local: Sempre que um evento ocorre em um processo, ele incrementa seu próprio contador no vetor.
@@ -42,8 +43,11 @@ Comunicação: Ao enviar uma mensagem, um processo envia seu vetor de relógio. 
 Eleições de Líder: O algoritmo também permite a eleição de um líder com base no valor máximo do vetor. O processo que tiver o maior valor no vetor se torna o novo líder, e os outros processos ajustam seus relógios de acordo.
 
 Resolução do Problema:
+
 Consistência: Os relógios vetoriais garantem que todos os processos tenham uma visão consistente da ordem dos eventos, mesmo que ocorram em paralelo.
+
 Detecção de Conflitos: O algoritmo permite detectar e resolver conflitos entre operações simultâneas, proporcionando uma lógica clara de causalidade.
+
 Robustez em Ambientes Distribuídos: O uso de comunicação assíncrona entre processos permite que o sistema opere de forma robusta, mesmo na presença de falhas ou atrasos na rede.
 
 Em resumo, o algoritmo de relógios vetoriais resolve o problema de sincronização em sistemas distribuídos ao fornecer uma maneira eficiente de rastrear e comunicar o tempo entre processos, garantindo a consistência e a ordem correta dos eventos.
