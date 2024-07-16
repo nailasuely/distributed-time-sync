@@ -16,17 +16,34 @@
 
 ```
 gh repo clone nailasuely/distributed-time-sync
-
 ```
 
 </div>
 
 
+<details open="open">
+<summary>Sumário</summary>
+
+- [Introdução](#Introdução)
+- [Tecnologias e Ferramentas Utilizadas](#Tecnologias-e-Ferramentas-Utilizadas)
+- [Metodologia](#Metodologia)
+  - colocar estrutura 
+  - colocar aqui os requisitos do barema
+- [Testes](#Testes)
+- [Como utilizar](#Como-utilizar)
+- [Conclusão](#Conclusão)
+- [Equipe](#equipe)
+- [Tutor](#tutor)
+- [Referências](#referências)
+  
+</details>
+
+
+![-----------------------------------------------------](https://github.com/nailasuely/breakout-problem3/blob/main/assets/img/prancheta.png)
+
 
 <div align="center">
    
-# Sincronização de Relógios em Ambientes Distribuídos
-
 </div>
 
 # Resumo
