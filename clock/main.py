@@ -70,7 +70,7 @@ if __name__ == "__main__":
     threading.Thread(target=start_server, args=(port, lambda msg: local_clock.update(msg))).start()
     
     # Enviar vetores periodicamente e executar eleição de líder
-    all_clocks_addr = [('127.0.0.1', 12345), ('127.0.0.1', 12346), ('127.0.0.1', 12347)]  # Outros relógios
+    all_clocks_addr = [('172.16.103.13', 12355), ('172.16.103.14', 12356), ('172.16.103.12', 12357)]
 
     # Envio dos vetores
     # O primeiro código a ser executado consegue funcionar. Ele gerencia e atualiza o drift e também envia seus vetores para outros processos.
