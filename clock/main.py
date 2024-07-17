@@ -4,6 +4,12 @@ import time
 from vector_clock import VectorClock
 from drift import DriftEvent, manage_drift, update_drift 
 import datetime
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+
+
+app = Flask(__name__)
+CORS(app)
 
 # Comunicação entre dispositivos - Recebe vetor
 def start_server(port, handle_message):
@@ -44,6 +50,25 @@ def send_message(server_ip, port, message):
     print(f"Falha ao conectar com {server_ip}:{port} após {retry_attempts} tentativas")
 
 
+@app.route('/leader', methods=['GET'])
+def get_leader():
+    vector = local_clock.get_time()
+    leader_index, leader_value = elect_leader(vector)
+    return jsonify({
+        'leader_index': leader_index,
+        'leader_value': leader_value
+    })
+
+"""@app.route('/drift', methods=['POST'])
+def update_drift_route():
+    data = request.json
+    drift_value = data.get('drift_value')
+    if drift_value is not None:
+        drift_event.set_drift(drift_value)
+        return jsonify({'message': 'Drift atualizado com sucesso', 'drift_value': drift_value})
+    else:
+        return jsonify({'error': 'drift_value é necessário'}), 400"""
+
 # Eleição do líder
 def elect_leader(vector):
     vector = list(vector)
@@ -70,13 +95,16 @@ if __name__ == "__main__":
     threading.Thread(target=start_server, args=(port, lambda msg: local_clock.update(msg))).start()
     
     # Enviar vetores periodicamente e executar eleição de líder
-    all_clocks_addr = [('172.16.103.13', 12355), ('172.16.103.14', 12356), ('172.16.103.12', 12357)]
+    #all_clocks_addr = [('172.16.103.13', 12355), ('172.16.103.14', 12356), ('172.16.103.12', 12357)]
+    all_clocks_addr =[('127.0.0.1', 12345), ('127.0.0.1', 12346), ('127.0.0.1', 12347)]
+    app.run(host='0.0.0.0', port=5030 + process_id, debug=False, use_reloader=False)
 
     # Envio dos vetores
     # O primeiro código a ser executado consegue funcionar. Ele gerencia e atualiza o drift e também envia seus vetores para outros processos.
     while True:
         time.sleep(1)
         vector_str = str(local_clock.get_time())
+        #print(vector_str)
         for i in range(len(all_clocks_addr)):
             if all_clocks_addr[i][1] != port:
                 send_message(all_clocks_addr[i][0], all_clocks_addr[i][1], vector_str)
