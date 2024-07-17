@@ -90,7 +90,7 @@ h1 {
   background: linear-gradient(45deg, transparent, transparent, #b91fdc, #b91fdc);
   z-index: 0;
   transform-origin: center;
-  animation: animate 2s linear infinite; /* Aumenta a velocidade da animação */
+  animation: animate 2s linear infinite; 
   animation-delay: -1s;
 }
 
@@ -106,7 +106,7 @@ h1 {
 .front-clock {
   text-align: center;
   padding-top: .6rem;
-  background-color: #0d0d0d; /* Cor de fundo dos números do relógio */
+  background-color: #0d0d0d;
   width: 100%;
   height: 95%;
   border-radius: 1rem;
