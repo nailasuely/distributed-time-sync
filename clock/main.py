@@ -6,8 +6,9 @@ from drift import DriftEvent, manage_drift, update_drift
 import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+import logging
 
-
+logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 CORS(app)
 
@@ -64,10 +65,27 @@ def update_drift_route():
     data = request.json
     drift_value = data.get('drift_value')
     if drift_value is not None:
-        drift_event.set_drift(drift_value)
+        with drift_event.lock:
+            drift_event.value = drift_value
         return jsonify({'message': 'Drift atualizado com sucesso', 'drift_value': drift_value})
     else:
         return jsonify({'error': 'drift_value é necessário'}), 400"""
+
+@app.route('/drift', methods=['POST'])
+def update_drift_route():
+    data = request.json
+    drift_value = data.get('drift_value')
+    if drift_value is not None:
+        try:
+            drift_value = float(drift_value)  # float
+            with drift_event.lock:
+                drift_event.value = drift_value
+            return jsonify({'message': 'Drift atualizado com sucesso', 'drift_value': drift_value})
+        except ValueError:
+            return jsonify({'error': 'drift_value deve ser um número válido'}), 400
+    else:
+        return jsonify({'error': 'drift_value é necessário'}), 400
+
 
 # Eleição do líder
 def elect_leader(vector):
@@ -79,6 +97,9 @@ def elect_leader(vector):
             leader_value = vector[i]
             leader_index = i
     return leader_index, leader_value
+
+def run_flask():
+    app.run(host='0.0.0.0', port=5030 + process_id, debug=False, use_reloader=False)
 
 # Código principal
 if __name__ == "__main__":
@@ -97,7 +118,10 @@ if __name__ == "__main__":
     # Enviar vetores periodicamente e executar eleição de líder
     #all_clocks_addr = [('172.16.103.13', 12355), ('172.16.103.14', 12356), ('172.16.103.12', 12357)]
     all_clocks_addr =[('127.0.0.1', 12345), ('127.0.0.1', 12346), ('127.0.0.1', 12347)]
-    app.run(host='0.0.0.0', port=5030 + process_id, debug=False, use_reloader=False)
+    #app.run(host='0.0.0.0', port=5030 + process_id, debug=False, use_reloader=False)
+
+
+    threading.Thread(target=run_flask).start()
 
     # Envio dos vetores
     # O primeiro código a ser executado consegue funcionar. Ele gerencia e atualiza o drift e também envia seus vetores para outros processos.
