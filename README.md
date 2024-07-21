@@ -15,8 +15,9 @@
 
 > Este relatório aborda a implementação de um sistema de sincronização de relógios em ambientes distribuídos utilizando relógios vetoriais. A solução é voltada para computadores conectados na mesma rede, permitindo que dispositivos se comuniquem entre si para ajustar seus relógios, que podem apresentar deriva (drift). O algoritmo utilizado foi o Relógio Vetorial, que permite o compartilhamento de um vetor com a quantidade de índices relacionado com a quantidade de dispositivos no sistema. Este projeto foi desenvolvido como parte dos estudos da disciplina de Concorrência e Conectividade na Universidade Estadual de Feira de Santana (UEFS).</p>
 
+<p align="center">
+  
 ## Download do repositório
-
 ```
 gh repo clone nailasuely/distributed-time-sync
 ```
