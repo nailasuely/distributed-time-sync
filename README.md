@@ -142,7 +142,7 @@ O sistema utiliza quatro threads para garantir a operação correta:
 
 <p align="justify">A reconexão de um relógio é feita pir meio da atualização periódica dos vetores de relógio entre os processos. Cada processo executa a função start_server, que está configurada para ouvir e aceitar conexões de outros processos.  Quando um relógio que estava desconectado volta a se conectar, ele envia seu vetor de relógio mais recente para os outros processos. Esse vetor é então incorporado ao sistema através da função update, que ajusta o vetor do processo que recebeu as informações, garantindo que ele saiba os valores mais recentes. Assim, o vetor do relógio reconectado é atualizado com o maior valor conhecido, o que evita retrocessos de tempo e ajuda a integrá-lo novamente ao sistema sem problemas.</p>
 
-![Interrupção](https://github.com/nailasuely/distributed-time-sync/images/interrupcao.png)
+![Interrupção](images/interrupcao.png)
 
 <p align="justify">Durante o período em que um relógio está desconectado, ele pode perder temporariamente sua posição de líder. Mas, quando ele se reconectar, ele retoma seu papel normal de envio e recebimento de vetores de relógio. A função de eleição de líder, elect_leader, garante que o sistema reavalie quem deve ser o líder após a reconexão. Isso assegura que a nova situação do relógio reconectado seja devidamente considerada na decisão sobre quem deve liderar o sistema.</p>
 
