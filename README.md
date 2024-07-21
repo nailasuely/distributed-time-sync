@@ -64,12 +64,16 @@ gh repo clone nailasuely/distributed-time-sync
 - **CORS** (Cross-Origin Resource Sharing): Extensão Flask  que é utilizada para permitir solicitações de diferentes origens para API.
 - **Docker:** Ferramenta para empacotar e distribuir aplicativos em contêineres.
   
+![-----------------------------------------------------](https://github.com/nailasuely/breakout-problem3/blob/main/assets/img/prancheta.png)
+
 ## Funcionalidades
 
 - **Relógio Vetorial:** Implementa um mecanismo para manter a ordem de eventos em sistemas distribuídos.
 - **Comunicação entre Processos:** Usa sockets para enviar e receber atualizações de relógio entre dispositivos.
 - **Eleições de Líder:** O dispositivo com maior tempo se torna o novo líder, promovendo a sincronização dos relógios.
 - **Drift Manual:** Permite a inserção manual de drift em cada dispositivo para simulações e testes.
+
+![-----------------------------------------------------](https://github.com/nailasuely/breakout-problem3/blob/main/assets/img/prancheta.png)
 
 ## Estrutura do Código
 
@@ -78,6 +82,8 @@ O projeto é estruturado em três arquivos principais:
 1. [**`main.py`**](https://github.com/nailasuely/distributed-time-sync/blob/main/clock/main.py): Contém a lógica principal do sistema, incluindo a comunicação entre processos e a eleição de líderes.
 2. [**`vector_clock.py`**](https://github.com/nailasuely/distributed-time-sync/blob/main/clock/vector_clock.py): Define a classe `VectorClock`, que gerencia a lógica dos relógios vetoriais e suas operações.
 3. [**`drift.py`**](https://github.com/nailasuely/distributed-time-sync/blob/main/clock/drift.py): Implementa a lógica para o gerenciamento do drift, permitindo que o tempo de tick seja ajustado dinamicamente.
+
+![-----------------------------------------------------](https://github.com/nailasuely/breakout-problem3/blob/main/assets/img/prancheta.png)
 
 ## Threads Necessárias
 
@@ -88,6 +94,7 @@ O sistema utiliza quatro threads para garantir a operação correta:
 3. **Thread de Recepção:** Recebe vetores de tempo de outros dispositivos.
 4. **Thread de Contagem:** Serve como o contador que atualiza o vetor local.
 
+![-----------------------------------------------------](https://github.com/nailasuely/breakout-problem3/blob/main/assets/img/prancheta.png)
 
 ## Discussão sobre os requisitos
 
@@ -134,6 +141,9 @@ O sistema utiliza quatro threads para garantir a operação correta:
 
 <p align="justify">E também, a função manage_drift ajusta o tempo do relógio local com base em um valor de drift, mas ainda respeita a lógica de "máximo" na atualização dos vetores entre processos. Assim, mesmo com variações de drift, as atualizações de vetores e mensagens de tempo são gerenciadas para garantir que o tempo global não retroceda e que todas as operações mantenham a ordem temporal correta. Isso é fundamental para garantir que o sistema permaneça coeso e preciso, mesmo diante de possíveis falhas temporárias ou variações nos relógios.</p>
 
+![-----------------------------------------------------](https://github.com/nailasuely/breakout-problem3/blob/main/assets/img/prancheta.png)
+
+
 ## Algoritmo Utilizado
 
 O projeto utiliza o algoritmo de relógios vetoriais para resolver o problema de sincronização de tempo em sistemas distribuídos.
@@ -157,6 +167,9 @@ Detecção de Conflitos: O algoritmo permite detectar e resolver conflitos entre
 Robustez em Ambientes Distribuídos: O uso de comunicação assíncrona entre processos permite que o sistema opere de forma robusta, mesmo na presença de falhas ou atrasos na rede.
 
 Em resumo, o algoritmo de relógios vetoriais resolve o problema de sincronização em sistemas distribuídos ao fornecer uma maneira eficiente de rastrear e comunicar o tempo entre processos, garantindo a consistência e a ordem correta dos eventos.
+
+![-----------------------------------------------------](https://github.com/nailasuely/breakout-problem3/blob/main/assets/img/prancheta.png)
+
 
 ## Como utilizar
 
