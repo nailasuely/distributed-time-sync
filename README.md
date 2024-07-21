@@ -122,9 +122,11 @@ O sistema utiliza quatro threads para garantir a operação correta:
 
 <p align="justify">A estratégia para sincronização dos relógios no sistema distribuído é feita utilizando relógios vetoriais, uma técnica que é útil para manter a precisão temporal entre diferentes processos na rede. Cada processo no sistema possui um vetor de relógio, representado pela classe `VectorClock`, que mantém um vetor de contadores com o mesmo comprimento do número total de processos. Cada posição no vetor corresponde ao tempo local de um processo específico. Quando um evento ocorre em um processo, ele incrementa o valor correspondente em seu vetor. Para garantir a consistência entre os processos, os vetores de relógio são periodicamente trocados e atualizados.</p> 
 
+![Vector Clock](https://github.com/nailasuely/distributed-time-sync/images/vector_clock.png)
+
 <p align="justify">Para que todos os processos tenham a mesma visão do tempo, os vetores são trocados e atualizados regularmente. Isso é feito usando sockets TCP, no qual cada processo envia seu vetor atual para os outros e ajusta seu próprio vetor com base nas informações que recebe.</p>
 
-<p align="justify">A sincronização é gerenciada pela atualização contínua dos vetores. A classe VectorClock tem um método chamado update(), que compara o vetor local com o vetor recebido e ajusta seus valores para refletir o maior valor conhecido em cada posição. Isso assegura que todos os vetores estejam em sincronia, mesmo que os relógios individuais avancem a diferentes ritmos por conta do drift. Além disso, o código inclui uma funcionalidade de eleição de líder que permite escolher um novo relógio de referência em caso de falha do atual líder.</p>  
+<p align="justify">A sincronização é gerenciada pela atualização contínua dos vetores. A classe VectorClock tem um método chamado update(), que compara o vetor local com o vetor recebido e ajusta seus valores para refletir o maior valor conhecido em cada posição. Isso assegura que todos os vetores estejam em sincronia, mesmo que os relógios individuais avancem a diferentes ritmos por conta do drift. Além disso, o código inclui uma funcionalidade de eleição de líder que permite escolher um novo relógio de referência em caso de falha do atual líder.</p> 
 
 
 ### Estratégia para eleição do relógio referência
@@ -133,10 +135,14 @@ O sistema utiliza quatro threads para garantir a operação correta:
 
 <p align="justify">A função elect_leader() é responsável pela eleição do líder. Ela compara os vetores de relógio de todos os processos e determina qual processo tem o maior valor em seu vetor. O processo com o maior valor é escolhido como líder, pois isso indica que ele tem a visão mais avançada do estado global. A eleição é feita periodicamente, e a função reavalia e exibe o líder atual a cada ciclo de envio de vetores. Dessa forma, se o líder falhar, o sistema pode rapidamente eleger um novo líder com base na informação mais recente dos vetores de relógio.</p>
 
+![Elect Leader](https://github.com/nailasuely/distributed-time-sync/images/decisao_lider.png)
+
 
 ### Tratamento da confiabilidade
 
 <p align="justify">A reconexão de um relógio é feita pir meio da atualização periódica dos vetores de relógio entre os processos. Cada processo executa a função start_server, que está configurada para ouvir e aceitar conexões de outros processos.  Quando um relógio que estava desconectado volta a se conectar, ele envia seu vetor de relógio mais recente para os outros processos. Esse vetor é então incorporado ao sistema através da função update, que ajusta o vetor do processo que recebeu as informações, garantindo que ele saiba os valores mais recentes. Assim, o vetor do relógio reconectado é atualizado com o maior valor conhecido, o que evita retrocessos de tempo e ajuda a integrá-lo novamente ao sistema sem problemas.</p>
+
+![Interrupção](https://github.com/nailasuely/distributed-time-sync/images/interrupcao.png)
 
 <p align="justify">Durante o período em que um relógio está desconectado, ele pode perder temporariamente sua posição de líder. Mas, quando ele se reconectar, ele retoma seu papel normal de envio e recebimento de vetores de relógio. A função de eleição de líder, elect_leader, garante que o sistema reavalie quem deve ser o líder após a reconexão. Isso assegura que a nova situação do relógio reconectado seja devidamente considerada na decisão sobre quem deve liderar o sistema.</p>
 
