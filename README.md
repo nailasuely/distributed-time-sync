@@ -12,6 +12,10 @@
 <div align="center">
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/nailasuely/distributed-time-sync/blob/main/LICENSE)
+![Python](https://img.shields.io/badge/Python-306998?logo=python&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black)
+![Flask](https://img.shields.io/badge/Flask-000000?style=flat&logo=flask&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
 
 > Este relatório aborda a implementação de um sistema de sincronização de relógios em ambientes distribuídos utilizando relógios vetoriais. A solução é voltada para computadores conectados na mesma rede, permitindo que dispositivos se comuniquem entre si para ajustar seus relógios, que podem apresentar deriva (drift). O algoritmo utilizado foi o Relógio Vetorial, que permite o compartilhamento de um vetor com a quantidade de índices relacionado com a quantidade de dispositivos no sistema. Este projeto foi desenvolvido como parte dos estudos da disciplina de Concorrência e Conectividade na Universidade Estadual de Feira de Santana (UEFS).</p>
 
