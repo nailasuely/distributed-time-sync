@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-    <img width="400px" src="https://github.com/user-attachments/assets/c2a138c0-3b5e-476c-a7d2-9dea32af8eab">
+    <img width="400px" src="https://github.com/nailasuely/distributed-time-sync/blob/main/assets/logo.gif">
   <br>
   Sincronização de Relógios em Ambientes Distribuídos
   <br>
