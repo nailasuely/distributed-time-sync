@@ -36,19 +36,16 @@ def start_server(port, handle_message):
 
 # Comunicação entre dispositivos - Envia vetor
 def send_message(server_ip, port, message):
-    retry_attempts = 10  # Número de tentativas de conexão
-    for attempt in range(retry_attempts):
-        try:
-            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client_socket.settimeout(1)  # Define um tempo limite para a conexão
-            client_socket.connect((server_ip, port))
-            client_socket.sendall(message.encode())
-            client_socket.close()
-            return  # Se a mensagem foi enviada com sucesso, sai da função
-        except (ConnectionRefusedError, socket.timeout) as e:
-            print(f"Erro ao enviar mensagem para {server_ip}:{port} - Tentativa {attempt+1}/{retry_attempts}: {e}")
-            time.sleep(1)  # Espera 1 segundo antes de tentar novamente
-    print(f"Falha ao conectar com {server_ip}:{port} após {retry_attempts} tentativas")
+    try:
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.settimeout(1)  # Define um tempo limite para a conexão
+        client_socket.connect((server_ip, port))
+        client_socket.sendall(message.encode())
+        print(f"Enviei: {message.encode()}")
+        client_socket.close()
+    except (ConnectionRefusedError, socket.timeout) as e:
+        print(f"Erro ao enviar mensagem para {server_ip}:{port} - {e}")
+    return 
 
 
 @app.route('/leader', methods=['GET'])
