@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './assets/css/styles.css';
+import { IP } from "./components/IP";
 
 function DigitalClock() {
   const [time, setTime] = useState({
@@ -25,7 +26,7 @@ function DigitalClock() {
     const fetchData = async () => {
       try {
         // atualizar 
-        const leaderResponse = await fetch('http://localhost:5030/leader');
+        const leaderResponse = await fetch(`http://${IP}/leader`);
         if (!leaderResponse.ok) {
           throw new Error('Network response was not ok');
         }
@@ -57,8 +58,10 @@ function DigitalClock() {
 
   return (
     <main className="container">
-      <h1 className="day">
+    <div className="py-10">
+      <h1 className="heading">
       Distributed Time Sync</h1>
+      </div>
       <div className="box">
         <div className="clock">
           <div className="front-clock">

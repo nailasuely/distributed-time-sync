@@ -120,7 +120,7 @@ h1 {
   font-size: 3.5rem;
   text-align: center;
   padding: 0 1rem;
-  border-bottom: 2px solid #333; /* Borda inferior mais escura */
+
   background: linear-gradient(90deg, #00dbde, #fc00ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -136,19 +136,18 @@ h1 {
 
 .clock {
   display: flex;
-  flex-direction:column-reverse;
+  flex-direction:column;
   justify-content: center;
-
-  margin: 0.5rem;
-  width: 70%;
+  margin: 0 .5rem;
+  width: 80%;
   height: 10rem;
+  align-items: center;
   color: #fff;
   background-color: #333;
   position: relative;
-  border-radius: 1.5rem;
+  border-radius: 1rem;
   font-size: 4rem;
   overflow: hidden;
-  border: 2px solid #444; 
 }
 
 .clock p {
@@ -162,10 +161,11 @@ h1 {
   left: -50%;
   width: 100%; 
   height: 100%;
-  background: linear-gradient(45deg, transparent, transparent, #2370f5, #2370f5);
+  background: linear-gradient(45deg, transparent, transparent,
+   #2370f5, #2370f5);
   z-index: 1;
-  transform-origin: center;
-  animation: animate 1s linear infinite;
+  transform-origin: bottom right;
+  animation: animate 5s linear infinite;
 }
 
 .clock::after {
@@ -173,13 +173,14 @@ h1 {
   position: absolute;
   top: -50%;
   left: -50%;
-  width: 100%; 
-  height: 100%; 
-  background: linear-gradient(45deg, transparent, transparent, #b91fdc, #b91fdc);
+  width: 90%; 
+  height: 8rem; 
+  background: linear-gradient(0deg, transparent, transparent,
+   #b91fdc, #b91fdc);
   z-index: 0;
-  transform-origin: center;
-  animation: animate 2s linear infinite; 
-  animation-delay: -1s;
+  transform-origin: bottom right;
+  animation: animate 5s linear infinite; 
+  animation-delay: -3s;
 }
 
 @keyframes animate {

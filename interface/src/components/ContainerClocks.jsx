@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import { FaLocationArrow } from 'react-icons/fa';
 import { projects } from '../data/projects';  
@@ -64,7 +62,7 @@ const RecentProjects = () => {
   return (
     <div className="py-20">
       <h1 className="heading">
-        Distributed Time Sync{" "}
+      Other Distributed Clocks{" "}
         <span className="text-purple"></span>
       </h1>
       <div className="flex flex-wrap items-center justify-center p-4 gap-16 mt-10">
@@ -97,7 +95,7 @@ const RecentProjects = () => {
                   margin: "1vh 0",
                 }}
               >
-                Clock
+ 
               </p>
 
               <div className="flex items-center justify-between mt-7 mb-3">
