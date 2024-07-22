@@ -104,7 +104,7 @@ const RecentProjects = () => {
                     type="text"
                     value={driftInputs[index]}
                     onChange={(event) => handleDriftChange(index, event)}
-                    placeholder="Digite o drift..."
+                    placeholder="Enter Drift..."
                     className="border border-white/[.2] rounded-full bg-black lg:w-40 lg:h-10 w-32 h-8 p-2 text-white"
                   />
                 </div>
@@ -114,7 +114,7 @@ const RecentProjects = () => {
                     onClick={() => handleDriftUpdate(index)}
                     className="flex lg:text-xl md:text-xs text-sm text-purple cursor-pointer"
                   >
-                    Alterar drift
+                    Adjust Drift
                   </p>
                   <FaLocationArrow className="ms-3" color="#CBACF9" />
                 </div>
