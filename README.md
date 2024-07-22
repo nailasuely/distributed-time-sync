@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-    <img width="400px" src="https://github.com/user-attachments/assets/c2a138c0-3b5e-476c-a7d2-9dea32af8eab">
+    <img width="400px" src="https://github.com/nailasuely/distributed-time-sync/blob/main/assets/logo.gif">
   <br>
   Sincronização de Relógios em Ambientes Distribuídos
   <br>
@@ -122,9 +122,11 @@ O sistema utiliza quatro threads para garantir a operação correta:
 
 <p align="justify">A estratégia para sincronização dos relógios no sistema distribuído é feita utilizando relógios vetoriais, uma técnica que é útil para manter a precisão temporal entre diferentes processos na rede. Cada processo no sistema possui um vetor de relógio, representado pela classe `VectorClock`, que mantém um vetor de contadores com o mesmo comprimento do número total de processos. Cada posição no vetor corresponde ao tempo local de um processo específico. Quando um evento ocorre em um processo, ele incrementa o valor correspondente em seu vetor. Para garantir a consistência entre os processos, os vetores de relógio são periodicamente trocados e atualizados.</p> 
 
+![Vector Clock](assets/vector_clock.png)
+
 <p align="justify">Para que todos os processos tenham a mesma visão do tempo, os vetores são trocados e atualizados regularmente. Isso é feito usando sockets TCP, no qual cada processo envia seu vetor atual para os outros e ajusta seu próprio vetor com base nas informações que recebe.</p>
 
-<p align="justify">A sincronização é gerenciada pela atualização contínua dos vetores. A classe VectorClock tem um método chamado update(), que compara o vetor local com o vetor recebido e ajusta seus valores para refletir o maior valor conhecido em cada posição. Isso assegura que todos os vetores estejam em sincronia, mesmo que os relógios individuais avancem a diferentes ritmos por conta do drift. Além disso, o código inclui uma funcionalidade de eleição de líder que permite escolher um novo relógio de referência em caso de falha do atual líder.</p>  
+<p align="justify">A sincronização é gerenciada pela atualização contínua dos vetores. A classe VectorClock tem um método chamado update(), que compara o vetor local com o vetor recebido e ajusta seus valores para refletir o maior valor conhecido em cada posição. Isso assegura que todos os vetores estejam em sincronia, mesmo que os relógios individuais avancem a diferentes ritmos por conta do drift. Além disso, o código inclui uma funcionalidade de eleição de líder que permite escolher um novo relógio de referência em caso de falha do atual líder.</p> 
 
 
 ### Estratégia para eleição do relógio referência
@@ -133,10 +135,14 @@ O sistema utiliza quatro threads para garantir a operação correta:
 
 <p align="justify">A função elect_leader() é responsável pela eleição do líder. Ela compara os vetores de relógio de todos os processos e determina qual processo tem o maior valor em seu vetor. O processo com o maior valor é escolhido como líder, pois isso indica que ele tem a visão mais avançada do estado global. A eleição é feita periodicamente, e a função reavalia e exibe o líder atual a cada ciclo de envio de vetores. Dessa forma, se o líder falhar, o sistema pode rapidamente eleger um novo líder com base na informação mais recente dos vetores de relógio.</p>
 
+![Elect Leader](assets/decisao_lider.png)
+
 
 ### Tratamento da confiabilidade
 
 <p align="justify">A reconexão de um relógio é feita pir meio da atualização periódica dos vetores de relógio entre os processos. Cada processo executa a função start_server, que está configurada para ouvir e aceitar conexões de outros processos.  Quando um relógio que estava desconectado volta a se conectar, ele envia seu vetor de relógio mais recente para os outros processos. Esse vetor é então incorporado ao sistema através da função update, que ajusta o vetor do processo que recebeu as informações, garantindo que ele saiba os valores mais recentes. Assim, o vetor do relógio reconectado é atualizado com o maior valor conhecido, o que evita retrocessos de tempo e ajuda a integrá-lo novamente ao sistema sem problemas.</p>
+
+![Interrupção](assets/interrupcao.png)
 
 <p align="justify">Durante o período em que um relógio está desconectado, ele pode perder temporariamente sua posição de líder. Mas, quando ele se reconectar, ele retoma seu papel normal de envio e recebimento de vetores de relógio. A função de eleição de líder, elect_leader, garante que o sistema reavalie quem deve ser o líder após a reconexão. Isso assegura que a nova situação do relógio reconectado seja devidamente considerada na decisão sobre quem deve liderar o sistema.</p>
 
@@ -150,30 +156,18 @@ O sistema utiliza quatro threads para garantir a operação correta:
 
 ![-----------------------------------------------------](https://github.com/nailasuely/breakout-problem3/blob/main/assets/img/prancheta.png)
 
-
 ## Algoritmo Utilizado
 
-O projeto utiliza o algoritmo de relógios vetoriais para resolver o problema de sincronização de tempo em sistemas distribuídos.
+<p align="justify">O projeto utiliza o algoritmo de relógios vetoriais para resolver o problema de sincronização de tempo em sistemas distribuídos.</p>
 
-Como o Algoritmo Funciona:
+<p align="justify">Cada processo possui um vetor que mantém o estado de seus próprios eventos e os eventos de outros processos. O vetor tem um tamanho igual ao número total de processos, e cada posição do vetor representa o tempo de um processo específico. Este vetor é constantemente atualizado para refletir os eventos locais e os recebidos de outros processos. Sempre que um evento ocorre em um processo, ele incrementa seu próprio contador no vetor. Este incremento garante que o tempo local do processo seja sempre atualizado em relação ao próprio processamento.</p>
 
-Estrutura de Dados: Cada processo possui um vetor que mantém o estado de seus próprios eventos e os eventos de outros processos. O vetor tem um tamanho igual ao número total de processos, e cada posição do vetor representa o tempo de um processo específico.
+<p align="justify">Ao enviar uma mensagem, um processo envia seu vetor de relógio. Quando um processo recebe uma mensagem, ele atualiza seu próprio vetor tomando o valor máximo entre seu vetor atual e o vetor recebido. Essa atualização é crucial para manter a consistência temporal entre os processos. O algoritmo permite a eleição de um líder com base no valor máximo do vetor. O processo que tiver o maior valor no vetor se torna o novo líder, e os outros processos ajustam seus relógios de acordo. Essa eleição é periódica e garante que sempre haja um relógio de referência confiável.</p>
 
-Incremento Local: Sempre que um evento ocorre em um processo, ele incrementa seu próprio contador no vetor.
+<p align="justify">Os relógios vetoriais garantem que todos os processos tenham uma visão consistente da ordem dos eventos, mesmo que ocorram em paralelo. Isso é vital para a integridade do sistema, pois evita ambiguidades na sequência dos eventos. O algoritmo permite detectar e resolver conflitos entre operações simultâneas, proporcionando uma lógica clara de causalidade. Isso significa que é possível determinar qual evento ocorreu antes de outro, mesmo em um ambiente distribuído.</p>
 
-Comunicação: Ao enviar uma mensagem, um processo envia seu vetor de relógio. Quando recebe um vetor, ele atualiza seu próprio vetor tomando o valor máximo entre seu vetor atual e o vetor recebido.
+<p align="justify">O uso de comunicação assíncrona entre processos permite que o sistema opere de forma robusta, mesmo na presença de falhas ou atrasos na rede. A capacidade de atualizar e ajustar continuamente os vetores de relógio torna o sistema resiliente a desconexões temporárias e outros problemas de rede. Em resumo, o algoritmo de relógios vetoriais resolve o problema de sincronização em sistemas distribuídos ao fornecer uma maneira eficiente de rastrear e comunicar o tempo entre processos, garantindo a consistência e a ordem correta dos eventos. Isso é essencial para manter a integridade e a confiabilidade do sistema, especialmente em ambientes onde a precisão temporal é crucial.</p>
 
-Eleições de Líder: O algoritmo também permite a eleição de um líder com base no valor máximo do vetor. O processo que tiver o maior valor no vetor se torna o novo líder, e os outros processos ajustam seus relógios de acordo.
-
-Resolução do Problema:
-
-Consistência: Os relógios vetoriais garantem que todos os processos tenham uma visão consistente da ordem dos eventos, mesmo que ocorram em paralelo.
-
-Detecção de Conflitos: O algoritmo permite detectar e resolver conflitos entre operações simultâneas, proporcionando uma lógica clara de causalidade.
-
-Robustez em Ambientes Distribuídos: O uso de comunicação assíncrona entre processos permite que o sistema opere de forma robusta, mesmo na presença de falhas ou atrasos na rede.
-
-Em resumo, o algoritmo de relógios vetoriais resolve o problema de sincronização em sistemas distribuídos ao fornecer uma maneira eficiente de rastrear e comunicar o tempo entre processos, garantindo a consistência e a ordem correta dos eventos.
 
 ![-----------------------------------------------------](https://github.com/nailasuely/breakout-problem3/blob/main/assets/img/prancheta.png)
 
