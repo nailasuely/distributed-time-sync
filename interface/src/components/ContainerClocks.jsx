@@ -1,24 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaLocationArrow } from 'react-icons/fa';
-import { projects } from '../data/projects';  
+import { projects } from '../data/projects';
 import { PinContainer } from './PinContainer';
 import Clock from './Clock';
-
-const apiUrls = [
-  'http://localhost:5030/leader',
-  'http://localhost:5031/leader',
-  'http://localhost:5032/leader'
-];
-
-const driftUrls = [
-  'http://localhost:5030/drift',
-  'http://localhost:5031/drift',
-  'http://localhost:5032/drift'
-];
+import { apiUrls, driftUrls, ips } from './IP';
 
 const RecentProjects = () => {
   const [driftInputs, setDriftInputs] = useState(apiUrls.map(() => ''));
   const [statusMessages, setStatusMessages] = useState(apiUrls.map(() => ''));
+  const [leaderIndex, setLeaderIndex] = useState(null);
+
+  useEffect(() => {
+    const fetchLeaderIndex = async () => {
+      try {
+        const responses = await Promise.allSettled(apiUrls.map(url => fetch(url)));
+        
+        const dataPromises = responses.map(async (response, index) => {
+          if (response.status === 'fulfilled') {
+            try {
+              return await response.value.json();
+            } catch (err) {
+              console.error(`Failed to parse JSON from URL ${apiUrls[index]}:`, err);
+              return null;
+            }
+          } else {
+            console.error(`Failed to fetch URL ${apiUrls[index]}:`, response.reason);
+            return null;
+          }
+        });
+
+        const data = await Promise.all(dataPromises);
+        
+        const leader = data.find(d => d && d.leader_index !== undefined);
+        if (leader) {
+          setLeaderIndex(leader.leader_index);
+        }
+      } catch (error) {
+        console.error('Failed to fetch leader index:', error);
+      }
+    };
+
+    fetchLeaderIndex();
+  }, []);
 
   const handleDriftChange = (index, event) => {
     const newDriftInputs = [...driftInputs];
@@ -62,7 +85,7 @@ const RecentProjects = () => {
   return (
     <div className="py-20">
       <h1 className="heading">
-      Other Distributed Clocks{" "}
+        Other Distributed Clocks{" "}
         <span className="text-purple"></span>
       </h1>
       <div className="flex flex-wrap items-center justify-center p-4 gap-16 mt-10">
@@ -72,7 +95,7 @@ const RecentProjects = () => {
             key={item.id}
           >
             <PinContainer
-              title="Clock"
+              title={`${ips[index]}`}
               href={item.link}
             >
               <div className="relative flex items-center justify-center sm:w-96 w-[80vw] overflow-hidden h-[20vh] lg:h-[30vh] mb-10">
@@ -85,17 +108,16 @@ const RecentProjects = () => {
               </div>
 
               <h1 className="font-bold lg:text-2xl md:text-xl text-base line-clamp-1">
-                Clock {index + 1}
+                Clock {index + 1} {leaderIndex === index && <span className="text-green-500">(Leader)</span>}
               </h1>
-
               <p
-                className="lg:text-xl lg:font-normal font-light text-sm line-clamp-2"
+                className="lg:text-xl lg:font-normal font-normal text-sm line-clamp-2"
                 style={{
                   color: "#BEC1DD",
                   margin: "1vh 0",
                 }}
               >
- 
+                {ips[index]}
               </p>
 
               <div className="flex items-center justify-between mt-7 mb-3">
