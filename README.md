@@ -107,8 +107,12 @@ O sistema utiliza quatro threads para garantir a operação correta:
 
 ### Interface para gerênciamento do tempo dos relógios
 
-<p align="justify">No sistema em questão, a interface para ajustar o desvio (drift) dos relógios é projetada para operar de forma interativa via linha de comando ou pela interface. Para isso, é solicitado para usuáio para ele inserir um novo valor de desvio, que representa a quantidade de variação temporal em segundos. Esse valor é utilizado para fazer o ajuste do relógio local, permitindo ajustes que podem ocorrer a qualquer momento durante a execução do sistema e possibilita a simulação de diferentes condições de desvio.</p>
+<p align="justify">No sistema em questão, a interface para ajustar o desvio (drift) dos relógios é projetada para operar de forma interativa via linha de comando ou pela interface (Figura 1). Para isso, é solicitado para usuáio para ele inserir um novo valor de desvio, que representa a quantidade de variação temporal em segundos. Esse valor é utilizado para fazer o ajuste do relógio local, permitindo ajustes que podem ocorrer a qualquer momento durante a execução do sistema e possibilita a simulação de diferentes condições de desvio.</p>
 
+<div align="center">
+   <img width="800px" src="https://github.com/nailasuely/distributed-time-sync/blob/main/assets/clocks.png" />
+    <p> Fig 1. Interface dos relógios</p>
+</div>
 <p align="justify">Para gerenciar essas alterações, o código faz uso de sockets, especificamente sockets TCP. O processo de ajuste do desvio é dividido em duas etapas principais. Primeiramente, um processo separado é encarregado de ler a entrada do usuário e atualizar o valor de desvio em um objeto denominado DriftEvent. Esse objeto é protegido por um bloqueio (lock) para garantir acesso seguro em um ambiente multithread. Em seguida, outro processo utiliza o valor atualizado do desvio para ajustar o intervalo de tempo entre os "ticks" do relógio. Esse gerenciamento é realizado através de uma thread que modifica o tempo de espera (sleep) com base no valor de desvio lido. Dessa forma, o relógio pode avançar mais rápido ou mais devagar conforme necessário. </p>
 
 ### Protocolo de comunicação
@@ -168,6 +172,10 @@ O sistema utiliza quatro threads para garantir a operação correta:
 
 <p align="justify">O uso de comunicação assíncrona entre processos permite que o sistema opere de forma robusta, mesmo na presença de falhas ou atrasos na rede. A capacidade de atualizar e ajustar continuamente os vetores de relógio torna o sistema resiliente a desconexões temporárias e outros problemas de rede. Em resumo, o algoritmo de relógios vetoriais resolve o problema de sincronização em sistemas distribuídos ao fornecer uma maneira eficiente de rastrear e comunicar o tempo entre processos, garantindo a consistência e a ordem correta dos eventos. Isso é essencial para manter a integridade e a confiabilidade do sistema, especialmente em ambientes onde a precisão temporal é crucial.</p>
 
+
+<div align="center">
+   <img width="800px" src="https://github.com/nailasuely/distributed-time-sync/blob/main/assets/gif-interface.gif" />
+</div>
 
 ![-----------------------------------------------------](https://github.com/nailasuely/breakout-problem3/blob/main/assets/img/prancheta.png)
 
